@@ -1,0 +1,295 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function verifiedSignedIn() {
+      return signedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isFullAdmin() {
+      return signedIn() && request.auth.uid in [
+        "Cu5SKekfbmNqEKJg7IumrB7L8HJ2",
+        "7Zzoq0WtGBVhV66hzN1wGVM0Fw52"
+      ];
+    }
+
+    function isViewerAdmin() {
+      return signedIn() && request.auth.uid in [
+        "wQnldzxokzfbrCKjDabOkV4kAcg2",
+        "CuReeRAxmqYLPXLmWXvMEHBBqoj2"
+      ];
+    }
+
+    function isAnyAdmin() {
+      return isFullAdmin() || isViewerAdmin();
+    }
+
+    function testExists(testId) {
+      return exists(/databases/$(database)/documents/tests/$(testId));
+    }
+
+    function testData(testId) {
+      return get(/databases/$(database)/documents/tests/$(testId)).data;
+    }
+
+    function testAuthor(testId) {
+      return testData(testId).authorId;
+    }
+
+    function hasValidTestShape() {
+      return request.resource.data.keys().hasOnly([
+        "title",
+        "authorId",
+        "authorEmail",
+        "visibilityStatus",
+        "isPublished",
+        "isDraft",
+        "createdAt",
+        "updatedAt",
+        "shareId",
+        "accessCode",
+        "timeLimitMinutes",
+        "shuffleQuestions",
+        "shuffleOptions",
+        "controlMode",
+        "questions",
+        "manualReviewMap"
+      ])
+      && request.resource.data.keys().hasAll([
+        "title",
+        "authorId",
+        "visibilityStatus",
+        "isPublished",
+        "isDraft",
+        "createdAt",
+        "updatedAt",
+        "shareId",
+        "accessCode",
+        "questions"
+      ])
+      && request.resource.data.authorId is string
+      && request.resource.data.visibilityStatus in ["draft", "closed", "active"]
+      && request.resource.data.isPublished == (request.resource.data.visibilityStatus == "active")
+      && request.resource.data.isDraft == (request.resource.data.visibilityStatus == "draft")
+      && request.resource.data.shareId is string
+      && request.resource.data.accessCode is string
+      && request.resource.data.questions is list;
+    }
+
+    function hasResultCreateShape() {
+      return request.resource.data.keys().hasAll([
+        "entryType",
+        "testId",
+        "teacherId",
+        "studentName",
+        "attemptId",
+        "createdAt"
+      ])
+      && request.resource.data.keys().hasOnly([
+        "resultId",
+        "attemptId",
+        "entryType",
+        "testId",
+        "testTitle",
+        "teacherId",
+        "studentUid",
+        "studentEmail",
+        "studentName",
+        "normalizedStudentName",
+        "attemptDeviceId",
+        "retake",
+        "retakeRequestId",
+        "questionIndex",
+        "question",
+        "questionType",
+        "selectedIndex",
+        "selectedOption",
+        "studentAnswer",
+        "correctAnswerIndex",
+        "acceptedAnswers",
+        "isCorrect",
+        "score",
+        "totalQuestions",
+        "percent",
+        "durationSeconds",
+        "startedAtMs",
+        "submittedAtMs",
+        "focusWarnings",
+        "cheatWarningsCount",
+        "fullscreenExitCount",
+        "pasteAttemptCount",
+        "suspiciousEvents",
+        "autoSubmitted",
+        "autoSubmitReason",
+        "autoCheckedQuestions",
+        "pendingManualCount",
+        "answers",
+        "createdAt"
+      ])
+      && request.resource.data.entryType in ["answer", "final"]
+      && request.resource.data.testId is string
+      && request.resource.data.teacherId is string
+      && request.resource.data.studentName is string
+      && request.resource.data.attemptId is string
+      && testExists(request.resource.data.testId)
+      && request.resource.data.teacherId == testAuthor(request.resource.data.testId)
+      && testData(request.resource.data.testId).visibilityStatus == "active"
+      && (!signedIn() || request.resource.data.studentUid == request.auth.uid);
+    }
+
+    function hasRetakeCreateShape() {
+      return request.resource.data.keys().hasAll([
+        "testId",
+        "teacherId",
+        "studentName",
+        "normalizedStudentName",
+        "attemptDeviceId",
+        "status",
+        "requestedAt"
+      ])
+      && request.resource.data.keys().hasOnly([
+        "testId",
+        "teacherId",
+        "studentName",
+        "normalizedStudentName",
+        "attemptDeviceId",
+        "status",
+        "requestedAt",
+        "resolvedAt",
+        "resolvedBy"
+      ])
+      && request.resource.data.testId is string
+      && request.resource.data.teacherId is string
+      && request.resource.data.studentName is string
+      && request.resource.data.normalizedStudentName is string
+      && request.resource.data.attemptDeviceId is string
+      && request.resource.data.status == "pending"
+      && testExists(request.resource.data.testId)
+      && request.resource.data.teacherId == testAuthor(request.resource.data.testId);
+    }
+
+    function retakeImmutableFieldsUnchanged() {
+      return request.resource.data.testId == resource.data.testId
+        && request.resource.data.teacherId == resource.data.teacherId
+        && request.resource.data.studentName == resource.data.studentName
+        && request.resource.data.normalizedStudentName == resource.data.normalizedStudentName
+        && request.resource.data.attemptDeviceId == resource.data.attemptDeviceId;
+    }
+
+    function teacherCanUpdateRetake() {
+      return signedIn()
+        && (request.auth.uid == resource.data.teacherId || isFullAdmin())
+        && request.resource.data.status in ["approved", "rejected"]
+        && retakeImmutableFieldsUnchanged()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status",
+          "resolvedAt",
+          "resolvedBy"
+        ]);
+    }
+
+    function studentCanUseApprovedRetake() {
+      return resource.data.status == "approved"
+        && request.resource.data.status == "used"
+        && retakeImmutableFieldsUnchanged()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status",
+          "usedAt",
+          "usedByAttemptId"
+        ]);
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn() && (request.auth.uid == userId || isAnyAdmin());
+      allow create, update: if signedIn() && request.auth.uid == userId;
+      allow delete: if isFullAdmin();
+
+      match /testResults/{resultId} {
+        allow create: if request.resource.data.teacherId == userId
+          && hasResultCreateShape();
+        allow read: if signedIn() && (request.auth.uid == userId || isAnyAdmin());
+        allow update: if false;
+        allow delete: if signedIn() && (request.auth.uid == userId || isFullAdmin());
+      }
+    }
+
+    match /tests/{testId} {
+      allow get: if resource.data.visibilityStatus == "active"
+        || (signedIn() && (
+          request.auth.uid == resource.data.authorId || isAnyAdmin()
+        ));
+      allow list: if isAnyAdmin()
+        || (signedIn() && resource.data.authorId == request.auth.uid)
+        || resource.data.visibilityStatus == "active";
+      allow create: if verifiedSignedIn()
+        && request.resource.data.authorId == request.auth.uid
+        && hasValidTestShape();
+      allow update: if verifiedSignedIn() && (
+        (
+          request.auth.uid == resource.data.authorId
+          && request.resource.data.authorId == resource.data.authorId
+          && hasValidTestShape()
+        )
+        || isFullAdmin()
+      );
+      allow delete: if signedIn() && (
+        request.auth.uid == resource.data.authorId || isFullAdmin()
+      );
+    }
+
+    match /results/{resultId} {
+      allow create: if hasResultCreateShape();
+      allow read: if signedIn() && (
+        request.auth.uid == resource.data.teacherId || isAnyAdmin()
+      );
+      allow update: if false;
+      allow delete: if signedIn() && (
+        request.auth.uid == resource.data.teacherId || isFullAdmin()
+      );
+    }
+
+    match /attemptLocks/{lockId} {
+      allow get: if true;
+      allow list: if isAnyAdmin();
+      allow create: if request.resource.data.keys().hasAll([
+          "testId",
+          "teacherId",
+          "studentName",
+          "normalizedStudentName",
+          "attemptDeviceId",
+          "attemptId",
+          "createdAt"
+        ])
+        && request.resource.data.keys().hasOnly([
+          "testId",
+          "teacherId",
+          "studentName",
+          "normalizedStudentName",
+          "attemptDeviceId",
+          "attemptId",
+          "createdAt"
+        ])
+        && request.resource.data.testId is string
+        && request.resource.data.teacherId is string
+        && request.resource.data.studentName is string
+        && request.resource.data.normalizedStudentName is string
+        && request.resource.data.attemptDeviceId is string
+        && testExists(request.resource.data.testId)
+        && request.resource.data.teacherId == testAuthor(request.resource.data.testId);
+      allow update, delete: if isFullAdmin();
+    }
+
+    match /retakeRequests/{requestId} {
+      allow create: if hasRetakeCreateShape();
+      allow get: if true;
+      allow list: if signedIn() && (
+        request.auth.uid == resource.data.teacherId || isAnyAdmin()
+      );
+      allow update: if teacherCanUpdateRetake() || studentCanUseApprovedRetake();
+      allow delete: if isFullAdmin();
+    }
+  }
+}

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать тест - Kazakh Quiz</title>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <script src="/scripts/theme.js?v=20260410d"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        html, body { overflow: auto; background: #1c2b8c; }
+        .create-container { padding: 50px; color: white; background: #1c2b8c; min-height: 100vh; }
+        .question-card { background: #2c2c2c; padding: 20px; border-radius: 15px; margin-bottom: 20px; }
+        .create-container input { margin: 10px 0; padding: 15px; border-radius: 10px; border: none; width: 100%; font-size: 16px; }
+        .save-btn { background: #4CAF50; color: white; padding: 15px 30px; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 18px; }
+        .link-box { margin-top: 20px; padding: 15px; background: #2c2c2c; border-radius: 12px; word-break: break-all; display: none; }
+        .copy-btn { margin-top: 10px; background: #7b3e19; color: white; padding: 10px 18px; border: none; border-radius: 12px; cursor: pointer; }
+        .hint-text { color: #d1d5db; margin-top: 6px; font-size: 14px; }
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .setting-card {
+            background: rgba(255,255,255,0.06);
+            border-radius: 14px;
+            padding: 16px;
+        }
+        .setting-card label {
+            display: block;
+            width: auto;
+            text-align: left;
+            font-size: 15px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .setting-card input[type="text"],
+        .setting-card input[type="number"] {
+            width: 100%;
+            margin: 0;
+        }
+        .checkbox-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .checkbox-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 2px 0 0;
+            padding: 0;
+            flex-shrink: 0;
+        }
+        .checkbox-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .checkbox-title {
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+        .question-mode-label { color: #bfdbfe; margin: 2px 0 16px; font-size: 14px; line-height: 1.5; }
+        .builder-actions { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:18px; }
+        .builder-action-btn {
+            border:none;
+            border-radius:12px;
+            padding:12px 16px;
+            color:#fff;
+            cursor:pointer;
+            font-weight:600;
+        }
+        .active-builder-btn {
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.16) inset;
+            transform: translateY(-1px);
+        }
+        .options-container { display:flex; flex-direction:column; gap:12px; width:100%; margin-top:10px; }
+        .choice-section,
+        .open-section {
+            margin-top: 4px;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 14px;
+        }
+        .choice-section h4,
+        .open-section h4 {
+            margin: 0 0 10px;
+        }
+        .question-subhint {
+            color: #d1d5db;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        .manual-review-box {
+            margin-bottom: 14px;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(15, 118, 110, 0.16);
+        }
+        .option-row {
+            display:grid;
+            grid-template-columns: 28px minmax(0, 1fr) 110px;
+            align-items:center;
+            gap:12px;
+            width:100%;
+        }
+        .open-answers-container {
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+            width:100%;
+            margin-top:10px;
+        }
+        .open-answer-row {
+            display:grid;
+            grid-template-columns: minmax(0, 1fr) 110px;
+            align-items:center;
+            gap:12px;
+            width:100%;
+        }
+        .option-radio {
+            width:20px !important;
+            height:20px !important;
+            margin:0 !important;
+            cursor:pointer;
+            justify-self:center;
+        }
+        .option-text,
+        .open-answer-text {
+            display: block !important;
+            width: 100% !important;
+            min-width: 0;
+            margin: 0 !important;
+            background: #999 !important;
+            color: #000 !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 15px !important;
+            font-size: 16px !important;
+        }
+        .option-remove-btn {
+            width: 110px;
+            background:#b91c1c;
+            color:#fff;
+            border:none;
+            border-radius:10px;
+            padding:10px 12px;
+            cursor:pointer;
+            justify-self:end;
+        }
+        .add-option-btn { background:#2563eb; }
+        .add-open-answer-btn { background:#0f766e; }
+        .secondary-save-btn {
+            background: #475569;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .save-actions {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .code-box {
+            margin-top: 12px;
+            color: #dbeafe;
+            font-size: 15px;
+        }
+        .control-settings-toggle {
+            grid-column: 1 / -1;
+            margin-top: 8px;
+            width: fit-content;
+            border: none;
+            border-radius: 999px;
+            padding: 12px 18px;
+            background: #2563eb;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .control-settings-toggle:hover {
+            background: #1d4ed8;
+        }
+        .control-settings-panel {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+        .source-text-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin: 16px 0 6px;
+        }
+        .source-text-btn {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            background: #0f766e;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .source-text-status {
+            color: #d1d5db;
+            font-size: 14px;
+        }
+        .source-text-modal-overlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.72);
+            z-index: 10000;
+        }
+        .source-text-modal-overlay[hidden] {
+            display: none;
+        }
+        .source-text-modal {
+            width: min(760px, 100%);
+            background: #111827;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.16);
+            border-radius: 8px;
+            padding: 22px;
+            box-shadow: 0 20px 48px rgba(0,0,0,0.35);
+        }
+        .source-text-modal h2 {
+            margin: 0 0 10px;
+        }
+        .source-text-modal textarea {
+            width: 100%;
+            min-height: 280px;
+            margin-top: 14px;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #111827;
+            background: #f8fafc;
+        }
+        .source-text-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+        .source-text-secondary-btn {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            background: #475569;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        @media (max-width: 720px) {
+            .create-container { padding: 24px 16px 48px; }
+            .settings-grid,
+            .control-settings-panel { grid-template-columns: 1fr; }
+            .control-settings-toggle { width: 100%; }
+            .source-text-actions { flex-direction: column; align-items: stretch; }
+            .source-text-btn,
+            .source-text-secondary-btn { width: 100%; }
+            .save-actions { flex-direction: column; }
+            .save-actions button { width: 100%; }
+            .builder-actions { flex-direction: column; }
+            .builder-action-btn { width: 100%; }
+            .choice-section,
+            .open-section { padding: 14px; }
+            .option-text,
+            .open-answer-text { min-height: 48px; }
+
+            .option-row {
+                grid-template-columns: 28px minmax(0, 1fr);
+            }
+
+            .open-answer-row {
+                grid-template-columns: 1fr;
+            }
+
+            .option-remove-btn {
+                grid-column: 1 / -1;
+                width: 100%;
+                justify-self: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="create-container">
+        <a href="/pages/home.html" style="color: #ccc; text-decoration: none;">← Назад</a>
+        <h1 id="displayTitle">Настройка теста</h1>
+        <p id="modeHint" style="color:#d9d9d9; margin: 10px 0 25px;">Создай новый тест и опубликуй его в облаке.</p>
+        
+        <div id="setupSection">
+            <input type="text" id="testTitle" placeholder="Название теста">
+            <input type="text" id="qCount" placeholder="Количество вопросов" inputmode="numeric" autocomplete="off">
+            <div class="hint-text">Только положительное число. Внутри каждого вопроса можно сделать либо варианты ответа, либо открытый ответ. Максимум 10 полей на один вопрос.</div>
+            <div class="source-text-actions">
+                <button type="button" id="sourceTextOpenBtn" class="source-text-btn">Вставить текст для теста</button>
+                <span id="sourceTextStatus" class="source-text-status">Текст не добавлен. Создание вопросов от него не зависит.</span>
+            </div>
+
+            <div class="settings-grid">
+                <div class="setting-card">
+                    <label for="timeLimitMinutes">Лимит времени в минутах</label>
+                    <input type="text" id="timeLimitMinutes" placeholder="Например 15" inputmode="numeric" autocomplete="off">
+                    <div class="hint-text">Оставь пустым, если тест без ограничения по времени.</div>
+                </div>
+
+                <div class="setting-card">
+                    <label for="accessCode">Код для быстрого входа</label>
+                    <input type="text" id="accessCode" placeholder="Например KZ1234" autocomplete="off" maxlength="10">
+                    <div class="hint-text">Можно открыть тест не только по ссылке, но и по этому коду.</div>
+                </div>
+
+                <div class="setting-card">
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="shuffleQuestions">
+                        <div class="checkbox-content">
+                            <div class="checkbox-title">Перемешивать вопросы</div>
+                            <div class="hint-text">Для каждого прохождения порядок вопросов будет случайным.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setting-card">
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="shuffleOptions">
+                        <div class="checkbox-content">
+                            <div class="checkbox-title">Перемешивать варианты ответов</div>
+                            <div class="hint-text">Работает только для вопросов с вариантами ответа.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="controlSettingsToggle" class="control-settings-toggle">Режим контроля</button>
+
+                <div id="controlSettingsPanel" class="control-settings-panel">
+                    <div class="setting-card control-setting-card">
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="preventCopy">
+                            <div class="checkbox-content">
+                                <div class="checkbox-title">Запретить копирование текста</div>
+                                <div class="hint-text">Отключает выделение, копирование, контекстное меню и перетаскивание во время теста.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-card control-setting-card">
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="hideOnBlur">
+                            <div class="checkbox-content">
+                                <div class="checkbox-title">Скрывать тест при уходе со вкладки</div>
+                                <div class="hint-text">Если ученик свернул вкладку или ушёл в другое приложение, вопросы закрываются предупреждением.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-card control-setting-card">
+                        <label for="autoSubmitAfterWarnings">Автосдача после предупреждений</label>
+                        <input type="text" id="autoSubmitAfterWarnings" placeholder="3" inputmode="numeric" autocomplete="off">
+                        <div class="hint-text">Рекомендуемое значение: 3. Работает вместе со скрытием при уходе со вкладки.</div>
+                    </div>
+
+                    <div class="setting-card control-setting-card">
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="requireRetakeApproval">
+                            <div class="checkbox-content">
+                                <div class="checkbox-title">Повтор только с разрешения учителя</div>
+                                <div class="hint-text">Повтор с тем же именем и устройством создаёт заявку в результатах теста.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-card control-setting-card">
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="showWatermark">
+                            <div class="checkbox-content">
+                                <div class="checkbox-title">Водяной знак с именем</div>
+                                <div class="hint-text">Показывает имя ученика поверх теста. Скриншоты браузер полностью запретить не может.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="currentStatusChip" class="status-chip">Статус: будет опубликован после сохранения</div>
+            <button class="save-btn" id="generateBtn" type="button">Создать поля</button>
+        </div>
+
+        <div id="questionsSection" style="display:none;">
+            <div id="questionsContainer"></div>
+            <div class="save-actions">
+                <button class="secondary-save-btn" id="saveDraftBtn" type="button">Сохранить как черновик</button>
+                <button class="save-btn" id="saveTestBtn" type="button">Опубликовать в облаке</button>
+            </div>
+
+            <div id="linkBox" class="link-box">
+                <div><strong>Ссылка на тест:</strong></div>
+                <div id="testLink"></div>
+                <div id="testCodeBox" class="code-box"></div>
+                <button id="copyLinkBtn" class="copy-btn" type="button">Скопировать ссылку</button>
+            </div>
+        </div>
+
+        <div id="sourceTextModal" class="source-text-modal-overlay" hidden>
+            <div class="source-text-modal" role="dialog" aria-modal="true" aria-labelledby="sourceTextModalTitle">
+                <h2 id="sourceTextModalTitle">Текст для теста</h2>
+                <div class="hint-text">Вставь материал, по которому будет делаться тест. Это поле можно оставить пустым.</div>
+                <textarea id="sourceTextInput" placeholder="Вставь сюда текст, конспект или отрывок..."></textarea>
+                <div class="source-text-modal-actions">
+                    <button type="button" id="sourceTextCloseBtn" class="source-text-secondary-btn">Закрыть</button>
+                    <button type="button" id="sourceTextSaveBtn" class="source-text-btn">Сохранить текст</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script src="/scripts/firebase-init.js?v=20260415a"></script>
+    <script src="/scripts/test-security.js?v=20260410a"></script>
+    <script src="/scripts/create.js?v=20260410a"></script>
+    <script src="/scripts/draft-guard.js?v=20260409b"></script>
+    <script>
+        (function () {
+            function isDraftStatus() {
+                const chip = document.getElementById("currentStatusChip");
+                return chip && chip.textContent.toLowerCase().includes("черновик");
+            }
+
+            async function forceDraftUi() {
+                const accessCodeInput = document.getElementById("accessCode");
+                const linkBox = document.getElementById("linkBox");
+                const testLink = document.getElementById("testLink");
+                const testCodeBox = document.getElementById("testCodeBox");
+                const copyLinkBtn = document.getElementById("copyLinkBtn");
+                const editTestId = new URLSearchParams(window.location.search).get("edit");
+
+                if (!isDraftStatus() || !linkBox || !testLink || !testCodeBox || !copyLinkBtn) {
+                    return;
+                }
+
+                if (accessCodeInput) {
+                    accessCodeInput.value = "";
+                }
+
+                testLink.textContent = "Ссылка появится после публикации теста.";
+                testCodeBox.textContent = "Код для входа появится после публикации теста.";
+                copyLinkBtn.dataset.link = "";
+                copyLinkBtn.style.display = "none";
+
+                if (!editTestId || typeof db === "undefined" || typeof firebase === "undefined") {
+                    return;
+                }
+
+                try {
+                    await db.collection("tests").doc(editTestId).update({
+                        accessCode: "",
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } catch (_) {
+                    // ignore background cleanup
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const draftButton = document.getElementById("saveDraftBtn");
+                if (draftButton) {
+                    draftButton.addEventListener("click", () => {
+                        const accessCodeInput = document.getElementById("accessCode");
+                        if (accessCodeInput) {
+                            accessCodeInput.value = "";
+                        }
+                        setTimeout(forceDraftUi, 0);
+                        setTimeout(forceDraftUi, 250);
+                        setTimeout(forceDraftUi, 800);
+                    }, true);
+                }
+
+                setTimeout(forceDraftUi, 0);
+                setTimeout(forceDraftUi, 400);
+            });
+        })();
+    </script>
+</body>
+</html>

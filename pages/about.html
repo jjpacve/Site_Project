@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>О нас - Kazakh Quiz</title>
+    <script src="/scripts/theme.js?v=20260410d"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; width: 100%; min-height: 100%; overflow-x: hidden; font-family: sans-serif; background-color: #000; }
+        .main-wrapper { display: flex; width: 100vw; min-height: 100vh; }
+        
+        .side-menu { 
+            width: 140px; background: linear-gradient(180deg, #151515 0%, #101010 100%); 
+            display: flex; flex-direction: column; align-items: center; 
+            padding: 100px 16px 24px; gap: 120px; flex-shrink: 0; box-shadow: 16px 0 38px rgba(0,0,0,0.22);
+        }
+        .side-menu a { text-decoration: none; color: #fff; font-size: 26px; font-weight: bold; transform: rotate(-90deg); white-space: nowrap; }
+
+        .content-area { 
+            flex-grow: 1; 
+            background: radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 20%), linear-gradient(to bottom, #111b66, #1c2b8c); 
+            display: flex; flex-direction: column; align-items: center; 
+            padding: 60px; overflow-y: auto; color: #fff; 
+        }
+
+        .title-box { margin-bottom: 50px; background: linear-gradient(180deg, #5d6880 0%, #465165 100%); padding: 16px 84px; color: #fff; font-size: 40px; font-weight: bold; border-radius: 14px; box-shadow: 0 18px 36px rgba(0,0,0,0.26); border: 1px solid rgba(255,255,255,0.12); }
+        
+        .about-container { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 35px; }
+        
+        .glass-box { 
+            background: rgba(255, 255, 255, 0.16); 
+            backdrop-filter: blur(14px); 
+            border: 1px solid rgba(255, 255, 255, 0.18); 
+            padding: 30px 45px; border-radius: 40px; 
+            font-size: 22px; text-align: center; 
+            box-shadow: 0 16px 38px rgba(0, 0, 0, 0.24);
+        }
+
+        .team-member { display: flex; align-items: center; gap: 30px; }
+        .avatar { 
+            min-width: 160px; height: 160px; 
+            background: linear-gradient(135deg, #8a98ff, #556175); 
+            border-radius: 50%; display: flex; justify-content: center; 
+            align-items: center; font-weight: bold; font-size: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            box-shadow: 0 18px 36px rgba(0,0,0,0.2);
+        }
+        .member-info { flex-grow: 1; text-align: left; }
+
+        @media (max-width: 900px) {
+            .main-wrapper {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .side-menu {
+                width: 100%;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                gap: 12px;
+                padding: 16px;
+                flex-wrap: wrap;
+            }
+
+            .side-menu a {
+                transform: none;
+                font-size: 18px;
+                background: rgba(255,255,255,0.08);
+                padding: 10px 16px;
+                border-radius: 999px;
+            }
+
+            .content-area {
+                padding: 24px 16px 40px;
+            }
+
+            .title-box {
+                width: 100%;
+                text-align: center;
+                padding: 16px 20px;
+                font-size: 30px;
+                margin-bottom: 24px;
+            }
+
+            .about-container {
+                gap: 20px;
+            }
+
+            .glass-box {
+                padding: 22px 20px;
+                font-size: 18px;
+                border-radius: 24px;
+            }
+
+            .team-member {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .member-info {
+                text-align: center;
+            }
+
+            .avatar {
+                min-width: 120px;
+                width: 120px;
+                height: 120px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="side-menu">
+            <a href="/pages/profile.html">Профиль</a>
+            <a href="/pages/home.html">Главная</a>
+        </div>
+        <div class="content-area">
+            <div class="title-box">О нас</div>
+            <div class="about-container">
+                <div class="glass-box">Мы — команда разработчиков, объединённая идеей создания удобных и полезных цифровых продуктов.</div>
+                
+                <div class="team-member">
+                    <div class="avatar">@russllanovich</div>
+                    <div class="glass-box member-info">
+                        <b>Мурзалиев Султанали Русланович</b> — разработка дизайна и помощь в написании кода. Отвечает за внешний вид и удобство сайта.
+                    </div>
+                </div>
+
+                <div class="team-member">
+                    <div class="glass-box member-info">
+                        <b>Ушков Тимофей Сергеевич</b> — создатель сайта и участие в дизайне. Отвечает за техническую часть и работу сайта.
+                    </div>
+                    <div class="avatar">@skielzz</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kazakh Quiz - Главная</title>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <script src="/scripts/theme.js?v=20260410d"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; width: 100%; min-height: 100%; overflow-x: hidden; font-family: sans-serif; }
+        .main-wrapper { display: flex; width: 100vw; min-height: 100vh; }
+        .side-menu { width: 140px; background: linear-gradient(180deg, #151515 0%, #101010 100%); display: flex; flex-direction: column; align-items: center; padding: 100px 16px 24px; gap: 120px; flex-shrink: 0; box-shadow: 16px 0 38px rgba(0,0,0,0.22); }
+        .side-menu a { text-decoration: none; color: #fff; font-size: 26px; font-weight: bold; transform: rotate(-90deg); white-space: nowrap; transition: 0.3s; }
+        .content-area { flex-grow: 1; background: radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 22%), linear-gradient(to bottom, #111b66, #1c2b8c); display: flex; flex-direction: column; align-items: center; position: relative; padding: 40px 32px 260px; min-width: 0; }
+        .title-box { margin-top: 80px; background: linear-gradient(180deg, #5d6880 0%, #465165 100%); padding: 22px 100px; color: #fff; font-size: 48px; font-weight: bold; border-radius: 18px; box-shadow: 0 18px 36px rgba(0,0,0,0.28); text-align: center; border: 1px solid rgba(255,255,255,0.12); }
+        .buttons-container { margin-top: 150px; display: flex; gap: 32px; z-index: 10; flex-wrap: wrap; justify-content: center; }
+        .action-btn { background: linear-gradient(180deg, #f2f2f2 0%, #dddddd 100%); color: #000; border: 1px solid rgba(255,255,255,0.18); padding: 25px 60px; border-radius: 50px; font-size: 28px; font-weight: bold; cursor: pointer; text-decoration: none; transition: 0.3s; text-align: center; box-shadow: 0 20px 34px rgba(0,0,0,0.18); }
+        .action-btn:hover { background-color: #fff; transform: translateY(-3px) scale(1.03); }
+        .start-btn { background: linear-gradient(180deg, #57bf5b 0%, #3d9f42 100%); color: #fff; }
+        .logout-btn { position: absolute; top: 40px; right: 40px; background: rgba(0,0,0,0.42); color: #fff; border: 1px solid rgba(255,255,255,0.32); padding: 12px 30px; border-radius: 20px; cursor: pointer; box-shadow: 0 10px 22px rgba(0,0,0,0.18); }
+        .history-section { position: absolute; bottom: 40px; width: calc(100% - 64px); max-width: 1100px; padding: 0; pointer-events: none; }
+        .history-box { width: 100%; height: 200px; background: linear-gradient(180deg, #323232 0%, #262626 100%); border-radius: 40px; pointer-events: auto; box-shadow: 0 -5px 20px rgba(0,0,0,0.3); overflow-y: auto; border: 1px solid rgba(255,255,255,0.08); }
+
+        /* Строка теста в истории */
+        .test-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #444;
+            transition: background-color 0.2s ease;
+        }
+        .test-row:hover { background: rgba(255,255,255,0.03); }
+        .test-row:last-child { border-bottom: none; }
+        .test-row-title { font-size: 16px; }
+        .test-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .test-row-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+        .test-row-subtitle {
+            font-size: 13px;
+            color: #bbb;
+        }
+        .row-btn {
+            background: #7b3e19;
+            color: white;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: 0.2s;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.16);
+        }
+        .row-btn:hover { background: #5c2d11; transform: translateY(-1px); }
+        .row-btn.edit-btn { background: #0f766e; }
+        .row-btn.edit-btn:hover { background: #0b5f59; }
+        .row-btn.results-btn { background: #1d4ed8; }
+        .row-btn.results-btn:hover { background: #1a43bb; }
+        .row-btn.access-btn { background: #7c3aed; }
+        .row-btn.access-btn:hover { background: #6d28d9; }
+        .row-btn.publish-btn { background: #15803d; }
+        .row-btn.publish-btn:hover { background: #166534; }
+        .row-btn.delete-btn { background: #b91c1c; }
+        .row-btn.delete-btn:hover { background: #991b1b; }
+
+        @media (max-width: 1100px) {
+            .history-box { height: 260px; }
+            .test-row {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 14px;
+            }
+            .test-actions {
+                width: 100%;
+                justify-content: flex-start;
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+            .row-btn {
+                width: 100%;
+                min-height: 42px;
+            }
+            .test-row-title,
+            .test-row-subtitle {
+                word-break: break-word;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .main-wrapper {
+                flex-direction: column;
+                width: 100%;
+            }
+            .side-menu {
+                width: 100%;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                gap: 12px;
+                padding: 16px;
+                flex-wrap: wrap;
+            }
+            .side-menu a {
+                transform: none;
+                font-size: 18px;
+                background: rgba(255,255,255,0.08);
+                padding: 10px 16px;
+                border-radius: 999px;
+            }
+            .content-area {
+                padding: 88px 16px 24px;
+                min-height: calc(100vh - 80px);
+            }
+            .logout-btn {
+                top: 18px;
+                right: 16px;
+                padding: 10px 18px;
+            }
+            .title-box {
+                margin-top: 18px;
+                width: 100%;
+                padding: 18px 20px;
+                font-size: 32px;
+            }
+            .buttons-container {
+                margin-top: 32px;
+                width: 100%;
+                gap: 16px;
+                flex-direction: column;
+            }
+            .action-btn {
+                width: 100%;
+                padding: 18px 20px;
+                font-size: 24px;
+            }
+            .history-section {
+                position: static;
+                width: 100%;
+                max-width: none;
+                margin-top: 28px;
+                pointer-events: auto;
+            }
+            .history-box {
+                height: auto;
+                min-height: 220px;
+                border-radius: 28px;
+            }
+        }
+
+        .toast-container { position: fixed; top: 25px; right: 25px; display: flex; flex-direction: column; gap: 12px; z-index: 99999; }
+        .toast { min-width: 280px; max-width: 420px; padding: 16px 18px; border-radius: 16px; color: #fff; font-size: 16px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.25); opacity: 0; transform: translateX(30px); transition: all 0.3s ease; }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        .toast.success { background: linear-gradient(135deg, #2e7d32, #43a047); }
+        .toast.error { background: linear-gradient(135deg, #c62828, #e53935); }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="side-menu">
+            <a href="/pages/profile.html">Профиль</a>
+            <a href="/pages/about.html">О нас</a>
+        </div>
+
+        <div class="content-area">
+            <button class="logout-btn" id="logoutBtn">Выйти</button>
+            <div class="title-box">Kazakh Quiz</div>
+
+            <div class="buttons-container">
+                <a href="/pages/create.html" class="action-btn">Создать тест</a>
+                <a href="/pages/play.html" class="action-btn start-btn">Начать тест</a>
+            </div>
+
+            <div class="history-section">
+                <div style="color:#fff; font-size: 24px; margin-bottom: 15px; font-weight: bold; margin-left: 20px;">
+                    Ваши тесты в облаке:
+                </div>
+                <div id="historyBox" class="history-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="/scripts/firebase-init.js?v=20260415a"></script>
+    <script src="/scripts/ui.js?v=20260413c"></script>
+
+    <script>
+        function ensureToastContainer() {
+            let container = document.getElementById("toastContainer");
+            if (!container) {
+                container = document.createElement("div");
+                container.id = "toastContainer";
+                container.className = "toast-container";
+                document.body.appendChild(container);
+            }
+            return container;
+        }
+
+        function showToast(message, type = "success") {
+            const container = ensureToastContainer();
+            const toast = document.createElement("div");
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add("show"));
+            setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 300); }, 2500);
+        }
+
+        async function copyText(text) {
+            if (!text) return false;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                } catch (error) {
+                    console.warn("Clipboard API недоступен, используем fallback.", error);
+                }
+            }
+
+            const helper = document.createElement("textarea");
+            helper.value = text;
+            helper.setAttribute("readonly", "");
+            helper.style.position = "fixed";
+            helper.style.top = "-9999px";
+            helper.style.left = "-9999px";
+            document.body.appendChild(helper);
+            helper.focus();
+            helper.select();
+            helper.setSelectionRange(0, helper.value.length);
+
+            let copied = false;
+            try {
+                copied = document.execCommand("copy");
+            } catch (error) {
+                console.error("Fallback copy failed:", error);
+            }
+
+            helper.remove();
+            return copied;
+        }
+
+        function normalizeTestStatus(data) {
+            if (data.visibilityStatus === "draft" || data.visibilityStatus === "closed" || data.visibilityStatus === "active") {
+                return data.visibilityStatus;
+            }
+
+            if (data.isDraft === true) {
+                return "draft";
+            }
+
+            if (data.isPublished === false) {
+                return "closed";
+            }
+
+            return "active";
+        }
+
+        function sanitizeAccessCode(value) {
+            return String(value || "")
+                .toUpperCase()
+                .replace(/[^A-Z0-9]/g, "")
+                .slice(0, 10);
+        }
+
+        function generateAccessCode() {
+            const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            let code = "";
+
+            for (let index = 0; index < 6; index++) {
+                code += alphabet[Math.floor(Math.random() * alphabet.length)];
+            }
+
+            return code;
+        }
+
+        function generateShareId() {
+            const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+            let shareId = "";
+
+            for (let index = 0; index < 20; index++) {
+                shareId += alphabet[Math.floor(Math.random() * alphabet.length)];
+            }
+
+            return shareId;
+        }
+
+        function createActionButton(label, className, onClick) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = `row-btn ${className}`;
+            button.textContent = label;
+            button.addEventListener("click", onClick);
+            return button;
+        }
+
+        function syncAdminLink(user) {
+            const sideMenu = document.querySelector(".side-menu");
+            const existingLink = document.getElementById("adminPanelLink");
+
+            if (isAdminUser(user)) {
+                if (!existingLink) {
+                    const adminLink = document.createElement("a");
+                    adminLink.id = "adminPanelLink";
+                    adminLink.href = "/pages/admin.html";
+                    adminLink.textContent = "Админка";
+                    sideMenu.appendChild(adminLink);
+                }
+            } else if (existingLink) {
+                existingLink.remove();
+            }
+        }
+
+        async function deleteTest(testId) {
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                showToast("Сначала войдите в аккаунт.", "error");
+                window.location.href = "/pages/login.html";
+                return;
+            }
+
+            const confirmed = await appConfirmDialog({
+                title: "Удаление теста",
+                message: "Удалить тест и все результаты по нему?",
+                confirmText: "Удалить",
+                cancelText: "Отмена",
+                variant: "danger"
+            });
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+                const testDoc = await db.collection("tests").doc(testId).get();
+                if (!testDoc.exists) {
+                    showToast("Тест уже удалён или не найден.", "error");
+                    await loadUserTests(currentUser.uid);
+                    return;
+                }
+
+                if (testDoc.data().authorId !== currentUser.uid) {
+                    showToast("Можно удалять только свои тесты.", "error");
+                    return;
+                }
+
+                const isAdmin = isAdminUser(currentUser);
+
+                if (isAdmin) {
+                    const resultsSnap = await db.collection("results")
+                        .where("testId", "==", testId)
+                        .get();
+                    const ownerResultsSnap = await db
+                        .collection("users")
+                        .doc(currentUser.uid)
+                        .collection("testResults")
+                        .where("testId", "==", testId)
+                        .get();
+
+                    const batch = db.batch();
+                    batch.delete(db.collection("tests").doc(testId));
+
+                    resultsSnap.forEach((resultDoc) => {
+                        batch.delete(resultDoc.ref);
+                    });
+
+                    ownerResultsSnap.forEach((resultDoc) => {
+                        batch.delete(resultDoc.ref);
+                    });
+
+                    await batch.commit();
+                    showToast("Тест и его результаты удалены.", "success");
+                } else {
+                    await db.collection("tests").doc(testId).delete();
+
+                    try {
+                        const ownerResultsSnap = await db
+                            .collection("users")
+                            .doc(currentUser.uid)
+                            .collection("testResults")
+                            .where("testId", "==", testId)
+                            .get();
+
+                        for (const resultDoc of ownerResultsSnap.docs) {
+                            try {
+                                await resultDoc.ref.delete();
+                            } catch (_) {
+                                // При текущих rules у пользователя может не быть права удалить результаты.
+                            }
+                        }
+                    } catch (_) {
+                        // Игнорируем ошибки очистки хвостов, главное — удалить сам тест.
+                    }
+
+                    showToast("Тест удалён.", "success");
+                }
+
+                await loadUserTests(currentUser.uid);
+            } catch (error) {
+                console.error("Ошибка удаления теста:", error);
+                showToast("Не удалось удалить тест.", "error");
+            }
+        }
+
+        async function setTestVisibility(testId, nextStatus) {
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                showToast("Сначала войдите в аккаунт.", "error");
+                return;
+            }
+
+            try {
+                const testRef = db.collection("tests").doc(testId);
+                const testDoc = await testRef.get();
+
+                if (!testDoc.exists) {
+                    showToast("Тест не найден.", "error");
+                    return;
+                }
+
+                const data = testDoc.data();
+                if (data.authorId !== currentUser.uid) {
+                    showToast("Можно управлять доступом только у своих тестов.", "error");
+                    return;
+                }
+                const nextShareId = nextStatus === "active"
+                    ? String(data.shareId || "").trim() || generateShareId()
+                    : "";
+                const nextAccessCode = nextStatus === "active"
+                    ? ""
+                    : "";
+
+                const regeneratedAccessCode = nextStatus === "active"
+                    ? sanitizeAccessCode(data.accessCode || "") || generateAccessCode()
+                    : "";
+
+                await testRef.update({
+                    visibilityStatus: nextStatus,
+                    isPublished: nextStatus === "active",
+                    isDraft: nextStatus === "draft",
+                    shareId: nextShareId,
+                    accessCode: regeneratedAccessCode,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast(nextStatus === "active" ? "Тест опубликован." : nextStatus === "closed" ? "Доступ к тесту закрыт." : "Черновик сохранён.", "success");
+                await loadUserTests(currentUser.uid);
+            } catch (error) {
+                console.error("Ошибка изменения доступа:", error);
+                showToast("Не удалось изменить доступ к тесту.", "error");
+            }
+        }
+
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = "/pages/login.html";
+            } else {
+                syncAdminLink(user);
+                loadUserTests(user.uid);
+            }
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+            try {
+                await auth.signOut();
+                showToast("Вы вышли из аккаунта", "success");
+                setTimeout(() => { window.location.href = "/pages/login.html"; }, 800);
+            } catch (error) {
+                console.error(error);
+                showToast("Не удалось выйти", "error");
+            }
+        });
+
+        async function loadUserTests(uid) {
+            const box = document.getElementById("historyBox");
+            box.innerHTML = `<div style="color:#bbb; padding:20px;">Загрузка тестов...</div>`;
+
+            try {
+                const snap = await db.collection("tests").where("authorId", "==", uid).get();
+                box.innerHTML = "";
+
+                if (snap.empty) {
+                    box.innerHTML = `<div style="color:#bbb; padding:20px;">У вас пока нет тестов</div>`;
+                    return;
+                }
+
+                const tests = snap.docs.sort((a, b) => {
+                    const aSeconds = a.data().createdAt?.seconds || 0;
+                    const bSeconds = b.data().createdAt?.seconds || 0;
+                    return bSeconds - aSeconds;
+                });
+                const fragment = document.createDocumentFragment();
+
+                tests.forEach((doc) => {
+                    const data = doc.data();
+                    const testLink = data.shareId
+                        ? `${window.location.origin}/pages/play.html?test=${encodeURIComponent(data.shareId)}`
+                        : "";
+                    const questionCount = Array.isArray(data.questions) ? data.questions.length : 0;
+                    const status = normalizeTestStatus(data);
+                    const isPublishedTest = status === "active" || status === "closed";
+                    if (status === "draft" && (data.accessCode || data.shareId)) {
+                        db.collection("tests").doc(doc.id).update({
+                            shareId: "",
+                            accessCode: "",
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }).catch(() => {});
+                    }
+                    const timeLimit = Number.isInteger(data.timeLimitMinutes) && data.timeLimitMinutes > 0
+                        ? ` • ${data.timeLimitMinutes} мин`
+                        : "";
+                    const accessCode = isPublishedTest && data.accessCode ? ` • Код: ${data.accessCode}` : "";
+
+                    const row = document.createElement("div");
+                    row.className = "test-row";
+
+                    const meta = document.createElement("div");
+                    meta.className = "test-row-meta";
+
+                    const title = document.createElement("span");
+                    title.className = "test-row-title";
+                    title.textContent = `📝 ${data.title || "Без названия"}`;
+
+                    const subtitle = document.createElement("span");
+                    subtitle.className = "test-row-subtitle";
+                    subtitle.textContent =
+                        `Вопросов: ${questionCount} • ${status === "draft" ? "черновик" : status === "closed" ? "доступ закрыт" : "доступ открыт"}${timeLimit}${accessCode}`;
+
+                    meta.appendChild(title);
+                    meta.appendChild(subtitle);
+
+                    const actions = document.createElement("div");
+                    actions.className = "test-actions";
+
+                    if (isPublishedTest && testLink) {
+                        actions.appendChild(createActionButton("Скопировать ссылку", "copy-btn", async () => {
+                            const copied = await copyText(testLink);
+                            if (copied) {
+                                showToast("Ссылка скопирована!", "success");
+                            } else {
+                                showToast("Не удалось скопировать. Попробуйте ещё раз вручную.", "error");
+                            }
+                        }));
+                    }
+
+                    actions.appendChild(createActionButton("Редактировать", "edit-btn", () => {
+                        window.location.href = `/pages/create.html?edit=${doc.id}`;
+                    }));
+
+                    if (isPublishedTest) {
+                        actions.appendChild(createActionButton("Результаты", "results-btn", () => {
+                            window.location.href = `/pages/results.html?test=${doc.id}`;
+                        }));
+                    }
+
+                    if (status === "draft") {
+                        actions.appendChild(createActionButton("Опубликовать", "publish-btn", async () => {
+                            await setTestVisibility(doc.id, "active");
+                        }));
+                    } else {
+                        actions.appendChild(createActionButton(
+                            status === "closed" ? "Открыть доступ" : "Закрыть доступ",
+                            "access-btn",
+                            async () => {
+                                await setTestVisibility(doc.id, status === "closed" ? "active" : "closed");
+                            }
+                        ));
+                    }
+
+                    actions.appendChild(createActionButton("Удалить", "delete-btn", async () => {
+                        await deleteTest(doc.id);
+                    }));
+
+                    row.appendChild(meta);
+                    row.appendChild(actions);
+                    fragment.appendChild(row);
+                });
+
+                box.appendChild(fragment);
+            } catch (error) {
+                console.error(error);
+                box.innerHTML = `<div style="color:#ffb3b3; padding:20px;">Ошибка загрузки тестов</div>`;
+            }
+        }
+    </script>
+    <script src="/scripts/draft-guard.js?v=20260409b"></script>
+</body>
+</html>

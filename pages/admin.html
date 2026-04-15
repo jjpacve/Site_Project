@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админка - Kazakh Quiz</title>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <script src="/scripts/theme.js?v=20260410d"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        html, body {
+            overflow: auto;
+            background: #0f172a;
+        }
+
+        body {
+            margin: 0;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .admin-shell {
+            min-height: 100vh;
+            padding: 32px 20px 56px;
+            background:
+                radial-gradient(circle at top left, rgba(59,130,246,0.22), transparent 30%),
+                radial-gradient(circle at top right, rgba(16,185,129,0.18), transparent 25%),
+                linear-gradient(180deg, #0f172a 0%, #111827 100%);
+        }
+
+        .admin-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .back-link {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .admin-badge {
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: rgba(59, 130, 246, 0.18);
+            border: 1px solid rgba(96, 165, 250, 0.45);
+            color: #bfdbfe;
+            font-weight: 700;
+        }
+
+        .hero-card,
+        .section-card,
+        .test-card,
+        .user-card {
+            background: rgba(15, 23, 42, 0.82);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 24px;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.24);
+        }
+
+        .hero-card {
+            padding: 28px;
+            margin-bottom: 22px;
+        }
+
+        .hero-title {
+            font-size: 40px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .hero-text {
+            color: #cbd5e1;
+            font-size: 17px;
+            max-width: 760px;
+            line-height: 1.6;
+        }
+
+        .helper-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 22px;
+        }
+
+        .helper-card {
+            background: rgba(30, 41, 59, 0.88);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            border-radius: 18px;
+            padding: 16px;
+        }
+
+        .helper-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #f8fafc;
+            margin-bottom: 8px;
+        }
+
+        .helper-text {
+            color: #cbd5e1;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin: 24px 0 30px;
+        }
+
+        .status-panel {
+            margin-bottom: 22px;
+            padding: 18px 20px;
+            border-radius: 20px;
+            background: rgba(30, 41, 59, 0.88);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+        }
+
+        .status-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #f8fafc;
+        }
+
+        .status-line {
+            color: #cbd5e1;
+            font-size: 14px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .summary-card {
+            padding: 18px 20px;
+            border-radius: 20px;
+            background: rgba(30, 41, 59, 0.88);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+        }
+
+        .summary-label {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .summary-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .section-card {
+            padding: 22px;
+        }
+
+        .section-title {
+            margin: 0 0 14px;
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .section-subtitle {
+            color: #94a3b8;
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+
+        .users-list,
+        .tests-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .user-card,
+        .test-card {
+            padding: 18px;
+        }
+
+        .user-email,
+        .test-title {
+            font-weight: 800;
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #f8fafc;
+        }
+
+        .meta-line {
+            color: #cbd5e1;
+            font-size: 14px;
+            margin-bottom: 6px;
+            word-break: break-word;
+        }
+
+        .soft-note {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .question-list {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .question-card {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: 18px;
+            padding: 16px;
+        }
+
+        .source-text-card {
+            background: rgba(15, 118, 110, 0.16);
+            border: 1px solid rgba(45, 212, 191, 0.26);
+            border-radius: 18px;
+            padding: 16px;
+        }
+
+        .source-text-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #ccfbf1;
+        }
+
+        .source-text-content {
+            color: #f8fafc;
+            font-size: 14px;
+            line-height: 1.65;
+            white-space: pre-wrap;
+        }
+
+        .question-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .option-item {
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.75);
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+
+        .option-item.correct {
+            background: rgba(22, 101, 52, 0.35);
+            border: 1px solid rgba(74, 222, 128, 0.32);
+            color: #dcfce7;
+        }
+
+        .toggle-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .toggle-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .delete-btn {
+            background: #b91c1c;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-weight: 700;
+            margin-top: 8px;
+            margin-left: 10px;
+        }
+
+        .delete-btn:hover {
+            background: #991b1b;
+        }
+
+        .loading-text,
+        .empty-text,
+        .error-text {
+            padding: 20px;
+            text-align: center;
+            color: #cbd5e1;
+        }
+
+        .error-text {
+            color: #fecaca;
+        }
+
+        @media (max-width: 1024px) {
+            .admin-shell {
+                padding: 22px 12px 44px;
+            }
+
+            .hero-title {
+                font-size: 30px;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .helper-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .toggle-btn,
+            .delete-btn {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-shell">
+        <div class="admin-container">
+            <div class="top-bar">
+                <a href="/pages/home.html" class="back-link">← Назад на главную</a>
+                <div id="adminBadge" class="admin-badge">Режим администратора</div>
+            </div>
+
+            <div class="hero-card">
+                <div class="hero-title">Админка Kazakh Quiz</div>
+                <div id="heroText" class="hero-text">
+                    Здесь можно просматривать аккаунты, тесты и содержимое вопросов в понятном режиме без лишних технических деталей.
+                </div>
+                <div class="helper-grid">
+                    <div class="helper-card">
+                        <div class="helper-title">1. Найдите тест</div>
+                        <div class="helper-text">Откройте блок с тестами и выберите нужное название из списка.</div>
+                    </div>
+                    <div class="helper-card">
+                        <div class="helper-title">2. Посмотрите вопросы</div>
+                        <div class="helper-text">Нажмите кнопку просмотра, чтобы открыть все вопросы и правильные ответы.</div>
+                    </div>
+                    <div class="helper-card">
+                        <div class="helper-title">3. Проверяйте без риска</div>
+                        <div class="helper-text">В режиме просмотра здесь ничего не удаляется и не ломается случайным нажатием.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-label">Тестов</div>
+                    <div id="testsCount" class="summary-value">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">Вопросов всего</div>
+                    <div id="questionsCount" class="summary-value">0</div>
+                </div>
+            </div>
+
+            <div class="status-panel">
+                <div class="status-title">Статус доступа</div>
+                <div id="statusUid" class="status-line">UID: загрузка...</div>
+                <div id="statusRole" class="status-line">Роль: загрузка...</div>
+                <div id="statusTests" class="status-line">tests: ожидание...</div>
+            </div>
+
+            <div id="loadingText" class="loading-text">Загрузка админки...</div>
+            <div id="errorText" class="error-text" style="display:none;"></div>
+
+            <div id="adminContent" class="content-grid" style="display:none;">
+                <div class="section-card">
+                    <h2 class="section-title">Тесты</h2>
+                    <div class="section-subtitle">Здесь можно открыть любой тест и посмотреть его вопросы и правильные ответы.</div>
+                    <div id="testsList" class="tests-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="/scripts/firebase-init.js?v=20260415a"></script>
+    <script src="/scripts/ui.js?v=20260413c"></script>
+    <script src="/scripts/admin.js?v=20260413c"></script>
+</body>
+</html>
